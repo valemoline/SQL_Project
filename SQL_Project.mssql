@@ -1,0 +1,183 @@
+--Company A SQL Project 
+-- This SQL Project serves as a practice on how to manipulate a dataset using where, order, inner join, and group by. Also how to load and create ERD and Tables.  
+
+--Creating the 7 tables for Company A 
+CREATE TABLE "jobs" (
+"jobid" Integer,
+"jobtitle" CHAR(256),
+"min_salary" Integer,
+"max_salary" integer,
+PRIMARY KEY ("jobid"),
+CONSTRAINT "FK_JOBS.jobid"
+	FOREIGN KEY ("jobid")
+		REFERENCES "employees"("job_id")
+);
+
+COPY "jobs"
+FROM '/Users/valentinamoline/desktop/projectfiles/jobs.csv'
+WITH (
+	FORMAT CSV,
+	null "NULL",
+	DELIMITER ',',
+	HEADER TRUE 
+);
+CREATE TABLE "departments" (
+"department_id" Integer,
+"department_name" CHAR(256),
+"location_id" Integer,
+PRIMARY KEY ("department_id"),
+CONSTRAINT "FK_departments.department_id"
+	FOREIGN KEY ("departments_id")
+		REFERENCES "departments"("department_id")
+);
+
+COPY "departments"
+FROM '/Users/valentinamoline/desktop/projectfiles/departments.csv'
+WITH (
+	FORMAT CSV,
+	null "NULL",
+	DELIMITER ',',
+	HEADER TRUE 
+);
+CREATE TABLE "dependents" (
+"dependent_id" Integer,
+"first_name" CHAR(256),
+"last_name" CHAR(256),
+"relationship" CHAR(256),
+PRIMARY KEY ("dependent_id"),
+CONSTRAINT "FK_dependents.employee_id"
+	FOREIGN KEY ("employee_id")
+		REFERENCES "employees"("employeeid")
+);
+
+COPY "dependents"
+FROM '/Users/valentinamoline/desktop/projectfiles/dependents.csv'
+WITH (
+	FORMAT CSV,
+	null "NULL",
+	DELIMITER ',',
+	HEADER TRUE 
+);
+
+CREATE TABLE "countries" (
+"country_id" Integer,
+"country_name" CHAR(256),
+"region_id" integer,
+PRIMARY KEY ("country_id"),
+CONSTRAINT "FK_countries.country_id"
+	FOREIGN KEY ("country_id")
+		REFERENCES "location"("country_id")
+);
+
+COPY "countries"
+FROM '/Users/valentinamoline/desktop/projectfiles/countries.csv'
+WITH (
+	FORMAT CSV,
+	null "NULL",
+	DELIMITER ',',
+	HEADER TRUE 
+);
+
+CREATE TABLE "regions" (
+"region_id" Integer,
+"region_name" CHAR(256),
+PRIMARY KEY ("region_id"),
+CONSTRAINT "FK_regions.region_id"
+	FOREIGN KEY ("region_id")
+		REFERENCES "countries"("region_id")
+);
+
+COPY "regions"
+FROM '/Users/valentinamoline/desktop/projectfiles/regions.csv'
+WITH (
+	FORMAT CSV,
+	null "NULL",
+	DELIMITER ',',
+	HEADER TRUE 
+);
+
+CREATE TABLE "location" (
+"location_id" Integer,
+"street_address" CHAR(256),
+"postal_code" Integer,
+"city" integer,
+"state_province" integer,
+"country_id" integer,
+PRIMARY KEY ("location_id"),
+CONSTRAINT "FK_location.location_id"
+	FOREIGN KEY ("location_id")
+		REFERENCES "departments"("location_id")
+);
+
+COPY "location"
+FROM '/Users/valentinamoline/desktop/projectfiles/location.csv'
+WITH (
+	FORMAT CSV,
+	null "NULL",
+	DELIMITER ',',
+	HEADER TRUE 
+);
+
+
+
+
+--Question 1 Display all the employees from the company 
+SELECT employees.first_name, employees.last_name, employees.employee_id
+FROM public.employees 
+
+
+
+--Question 2 Display all the locations where Company A has offices 
+SELECT countries.country_name 
+FROM public.countries 
+
+
+
+--Quesiton 3 Display all the employees that make more than $15,000
+SELECT employees.first_name, employees.last_name, employees.salary
+FROM public.employees
+WHERE employees.salary >15000
+ORDER BY employees.salary DESC 
+
+
+
+--Question 4 Find the city and coutnry for the location with the postal code 99236
+SELECT locations.city, locations.country_id, locations.postal_code
+FROM public.locations 
+WHERE locations.postalcode = '99236'
+
+--Question 5 Find the average of all the employee's salary 
+SELECT AVG(emplyees.salary)
+FROM public.employees
+
+-- Question 6 Find the count of all the emplyees with child dependents 
+SELECT COUNT (dependents.relationship)
+FROM public.dependents 
+WHERE dependents.relationship = 'Child'
+
+--Question 7 Display all the employees in the accountant department
+SELECT employees.first_name,employees.last_name, employees.job_id
+FROM public.employees
+INNER JOIN public.jobs
+ON employees.job_id = jobs.job_id
+WHERE jobs.job_title ='Accountant'
+
+--Question 8 Display the city and country of each department location 
+SELECT departments.department_name, department.location_id, locations.city, locations.country
+FROM public.departments 
+INNER JOIN public.locations
+ON departments.location_id = locations.location_id
+ORDER BY locations.country_id ASC 
+
+--Question 9 Display how many employees are in each department 
+SELECT departments.department_name, Count(employees.employee_di)
+FROM public.departments 
+INNER JOIN public.employees ON employees.department_id = departments.department_id
+GROUP BY departments.department_name
+
+--Question 10 Display the average salary for each department that is over 5,000 
+SELECT departments.department_name, ROUND(AVG(employees.salary))
+FROM public.departments 
+INNER JOIN public.employees ON employees.department_id = departments.department_id
+GROUP BY departments.department_id
+HAVING ROUND(AVG(employees.salary))>5000
